@@ -57,6 +57,7 @@ public:
   int scarabsForThieves();
   ///The maximum number of thieves per tile.
   int maxStack();
+  int roundsToWin();
   
   BaseAI(Connection* c);
   virtual ~BaseAI();
