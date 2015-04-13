@@ -3,6 +3,7 @@
 
 #include <cstdlib>
 #include <ctime>
+			#include <algorithm>
 
 AI::AI(Connection* conn) : BaseAI(conn) {}
 
@@ -36,7 +37,7 @@ bool AI::run()
 		for(unsigned i = 0; i < traps.size(); ++i)
 		{
 			Trap& trap = traps[i];
-			if(trap.owner() == playerID() && trap.trapType() == SARCOPHAGUS)
+			if(trap.owner() == playerID() && trap.trapType() == TrapType::SARCOPHAGUS)
 			{
 				mySarcophagus = &trap;
 				break;
@@ -47,10 +48,10 @@ bool AI::run()
 		{
 			//if the tile is on my side and is empty
 			Tile& tile = tiles[i];
-			if(onMySide(tile.x()) && tile.type() == EMPTY)
+			if(onMySide(tile.x()) && tile.type() == Tile::EMPTY)
 			{
 				//move my sarcophagus to that location
-				me->placeTrap(tile.x(), tile.y(), SARCOPHAGUS);
+				me->placeTrap(tile.x(), tile.y(), TrapType::SARCOPHAGUS);
 			}
 		}
 		//continue spawning traps until there isn't enough money to spend
@@ -71,11 +72,11 @@ bool AI::run()
 				if(me->scarabs() >= trapTypes[trapType].cost())
 				{
 					//check if the tile is the right type (wall or empty)
-					if(trapTypes[trapType].canPlaceOnWalls() && tile.type() == WALL)
+					if(trapTypes[trapType].canPlaceOnWalls() && tile.type() == Tile::WALL)
 					{
 						me->placeTrap(tile.x(), tile.y(), trapType);
 					}
-					else if(!trapTypes[trapType].canPlaceOnWalls() && tile.type() == EMPTY)
+					else if(!trapTypes[trapType].canPlaceOnWalls() && tile.type() == Tile::EMPTY)
 					{
 						me->placeTrap(tile.x(), tile.y(), trapType);
 					}
@@ -87,7 +88,7 @@ bool AI::run()
 			}
 		}
 	}
-	//otherwise it's time to move and purchase thiefs
+	//otherwise it's time to move and purchase thiefs and activate traps
 	else
 	{
 		//find my sarcophagus or the enemy sarcophagus
@@ -109,14 +110,29 @@ bool AI::run()
 		//find my spawn tiles
 		std::vector<Tile*> spawnTiles = getMySpawns();
 		//select a random thief type
-		int thiefNo = 1;//rand() % thiefTypes.size();
+		int thiefNo = rand() % thiefTypes.size();
 		if(me->scarabs() >= thiefTypes[thiefNo].cost())
 		{
-			//select a random spawn location
-			int spawnLoc = rand() % spawnTiles.size();
-			//spawn a thief there
-			Tile* spawnTile = spawnTiles[spawnLoc];
-			me->purchaseThief(spawnTile->x(), spawnTile->y(), thiefNo);
+			//make sure another can be spawned
+			int max = thiefTypes[thiefNo].maxInstances();
+			int count = 0;
+			std::vector<Thief*> myThieves = getMyThieves();
+			for(unsigned i = 0; i < myThieves.size(); ++i)
+			{
+				if(myThieves[i]->thiefType() == thiefNo)
+				{
+					++count;
+				}
+			}
+			//only spawn if there aren't too many
+			if(count < max)
+			{
+				//select a random spawn location
+				int spawnLoc = rand() % spawnTiles.size();
+				//spawn a thief there
+				Tile* spawnTile = spawnTiles[spawnLoc];
+				me->purchaseThief(spawnTile->x(), spawnTile->y(), thiefNo);
+			}
 		}
 		//move my thieves
 		std::vector<Thief*> myThieves = getMyThieves();
@@ -126,11 +142,10 @@ bool AI::run()
 			//if the thief is alive and not frozen
 			if(thief.alive() && thief.frozenTurnsLeft() == 0)
 			{
-
 				const int xChange[] = {-1, 1,  0, 0};
 				const int yChange[] = { 0, 0, -1, 1};
 				//try to dig or use a bomb before moving
-				if(thief.thiefType() == DIGGER && thief.specialsLeft() > 0)
+				if(thief.thiefType() == ThiefType::DIGGER && thief.specialsLeft() > 0)
 				{
 					for(unsigned i = 0; i < 4; ++i)
 					{
@@ -143,10 +158,42 @@ bool AI::run()
 						if(wallTile != NULL && emptyTile != NULL && !onMySide(checkX + xChange[i]))
 						{
 							//if the there is a wall with an empty tile on the other side
-							if(wallTile->type() == WALL && emptyTile->type() == EMPTY)
+							if(wallTile->type() == Tile::WALL && emptyTile->type() == Tile::EMPTY)
 							{
 								//dig through the wall
-								thief.act(checkX, checkY);
+								thief.useSpecial(checkX, checkY);
+								//break out of the loop
+								break;
+							}
+						}
+					}
+				}
+				else if(thief.thiefType() == ThiefType::BOMBER && thief.specialsLeft() > 0)
+				{
+					for(unsigned i = 0; i < 4; ++i)
+					{
+						//the place to check for things to blow up
+						int checkX = thief.x() + xChange[i];
+						int checkY = thief.y() + yChange[i];
+						//make sure that the spot isn't on the other side
+						if(!onMySide(checkX))
+						{
+							//if there is a wall tile there, blow it up
+							Tile* checkTile = getTile(checkX, checkY);
+							if(checkTile != NULL && checkTile->type() == Tile::WALL)
+							{
+								//blow up the wall
+								thief.useSpecial(checkX, checkY);
+								//break out of the loop
+								break;
+							}
+							//otherwise check if there is a trap there
+							Trap* checkTrap = getTrap(checkX, checkY);
+							//don't want to blow up the sarcophagus!
+							if(checkTrap != NULL && checkTrap->trapType() != TrapType::SARCOPHAGUS)
+							{
+								//blow up the trap
+								thief.useSpecial(checkX, checkY);
 								//break out of the loop
 								break;
 							}
@@ -166,6 +213,42 @@ bool AI::run()
 					{
 						thief.move(path[0].x, path[0].y);
 					}	
+				}
+			}
+		}
+		//do things with traps now
+		std::vector<Trap*> myTraps = getMyTraps();
+		for(unsigned i = 0; i < myTraps.size(); ++i)
+		{
+			const int xChange[] = {-1, 1,  0, 0};
+			const int yChange[] = { 0, 0, -1, 1};
+			Trap& trap = *myTraps[i];
+			//if trap is a boulder
+			if(trap.trapType() == TrapType::BOULDER)
+			{
+				//if there is an enemy thief adjancent
+				for(unsigned i = 0; i < 4; ++i)
+				{
+					Thief* enemyThief = getThief(trap.x() + xChange[i], trap.y() + yChange[i]);
+					//roll over the thief
+					if(enemyThief != NULL)
+					{
+						trap.act(trap.x() + xChange[i], trap.y() + yChange[i]);
+					}
+				}
+			}
+			else if(trap.trapType() == TrapType::MUMMY)
+			{
+				//move around randomly if a mummy
+				int dir = rand() % 4;
+				int checkX = trap.x() + xChange[dir];
+				int checkY = trap.y() + yChange[dir];
+				Tile* checkTile = getTile(checkX, checkY);
+				//if the tile is empty
+				if(checkTile != NULL && checkTile->type() == Tile::EMPTY)
+				{
+					//move on that tile
+					trap.act(checkX, checkY);
 				}
 			}
 		}

@@ -13,6 +13,12 @@ class ThiefType {
   void* ptr;
   ThiefType(_ThiefType* ptr = NULL);
 
+  static const int BOMBER = 0;
+  static const int DIGGER = 1;
+  static const int NINJA = 2;
+  static const int GUIDE = 3;
+  static const int SLAVE = 4;
+
   // Accessors
   ///Unique Identifier
   int id();

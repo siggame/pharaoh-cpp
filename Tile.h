@@ -13,6 +13,10 @@ class Tile : public Mappable {
   public:
   Tile(_Tile* ptr = NULL);
 
+  static const int EMPTY = 0;
+  static const int SPAWN = 1;
+  static const int WALL = 2;
+
   // Accessors
   ///Unique Identifier
   int id();

@@ -16,35 +16,6 @@ struct Point
 ///The class implementing gameplay logic.
 class AI: public BaseAI
 {
-	enum
-	{
-		EMPTY = 0,
-		SPAWN,
-		WALL,
-	};
-	enum
-	{
-		BOMBER = 0,
-		DIGGER,
-		NINJA,
-		GUIDE,
-		SLAVE,
-	};
-	enum
-	{
-		SARCOPHAGUS = 0,
-		SNAKE_PIT,
-		SWINGING_BLADE,
-		BOULDER,
-		SPIDER_WEB,
-		QUICKSAND,
-		OIL_VASES,
-		ARROW_WALL,
-		HEAD_WIRE,
-		MERCURY_PIT,
-		MUMMY,
-		FAKE_ROTATING_WALL,
-	};
 	//returns true if the position is on your side of the field
 	bool onMySide(int x)
 	{
@@ -56,6 +27,23 @@ class AI: public BaseAI
 		{
 			return (x >= mapWidth()/2);
 		}
+	}
+
+	//returns the first thief encountered on x, y or NULL if no thief
+	Thief* getThief(int x, int y)
+	{
+		if(x < 0 || x >= mapWidth() || y < 0 || y >= mapHeight())
+		{
+			return NULL;
+		}
+		for(int i = 0; i < thiefs.size(); ++i)
+		{
+			if(thiefs[i].x() == x && thiefs[i].y() == y)
+			{
+				return &thiefs[i];
+			}
+		}
+		return NULL;
 	}
 
 	//returns the tile at the given x,y position or NULL otherwise
@@ -85,13 +73,39 @@ class AI: public BaseAI
 		return NULL;
 	}
 
+	//returns a vector of all of your traps
+	std::vector<Trap*> getMyTraps()
+	{
+		std::vector<Trap*> toReturn;
+		for(unsigned i = 0; i < traps.size(); ++i)
+		{
+			if(traps[i].owner() == playerID())
+			{
+				toReturn.push_back(&traps[i]);
+			}
+		}
+	}
+
+	//returns a vector of all of your enemy's traps
+	std::vector<Trap*> getEnemyTraps()
+	{
+		std::vector<Trap*> toReturn;
+		for(unsigned i = 0; i < traps.size(); ++i)
+		{
+			if(traps[i].owner() != playerID())
+			{
+				toReturn.push_back(&traps[i]);
+			}
+		}
+	}
+
 	//returns a vector of all of your spawn tiles
 	std::vector<Tile*> getMySpawns()
 	{
 		std::vector<Tile*> toReturn;
 		for(unsigned i = 0; i < tiles.size(); ++i)
 		{
-			if(!onMySide(tiles[i].x()) && tiles[i].type() == SPAWN)
+			if(!onMySide(tiles[i].x()) && tiles[i].type() == Tile::SPAWN)
 			{
 				toReturn.push_back(&tiles[i]);
 			}
@@ -154,7 +168,7 @@ class AI: public BaseAI
 				Tile* toAdd = getTile(loc.x, loc.y);
 				if(toAdd != NULL)
 				{
-					if(toAdd->type() == EMPTY && parent.count(toAdd) == 0)
+					if(toAdd->type() == Tile::EMPTY && parent.count(toAdd) == 0)
 					{
 						theseTiles.push_back(toAdd);
 						parent[toAdd] = curTile;
