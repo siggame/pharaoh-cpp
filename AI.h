@@ -146,37 +146,49 @@ class AI: public BaseAI
   std::deque<Point> findPath(Point start, Point end)
   {
     std::deque<Point> toReturn;
-
-    std::deque<Tile*> theseTiles;
+    //the set of open tiles to look at
+    std::deque<Tile*> openSet;
     //points back to parent tile
     std::map<Tile*, Tile*> parent;
-    theseTiles.push_back(getTile(start.x, start.y));
+    //push back the starting tile
+    openSet.push_back(getTile(start.x, start.y));
+    //the start tile has no parent
     parent[getTile(start.x, start.y)] = NULL;
+    //the end tile
     Tile* endTile = getTile(end.x, end.y);
+    //as long as the end tile has no parent
     while(parent.count(endTile) == 0)
     {
-      if(theseTiles.empty())
+    	//if there are no tiles in the openSet the there is no path
+      if(openSet.empty())
       {
         return toReturn;
       }
-      Tile* curTile = theseTiles.front();
-      theseTiles.pop_front();
+      //check tiles from the front
+      Tile* curTile = openSet.front();
+      //and remove it
+      openSet.pop_front();
       const int xChange[] = { 0, 0, -1, 1};
       const int yChange[] = {-1, 1,  0, 0};
+      //look in all directions
       for(unsigned i = 0; i < 4; ++i)
       {
         Point loc(curTile->x() + xChange[i], curTile->y() + yChange[i]);
         Tile* toAdd = getTile(loc.x, loc.y);
+        //if a tile exists there
         if(toAdd != NULL)
         {
+        	//if it's an open file and it doesn't have a parent
           if(toAdd->type() == Tile::EMPTY && parent.count(toAdd) == 0)
           {
-            theseTiles.push_back(toAdd);
+          	//add the tile to the open set; and mark its parent as the current tile
+            openSet.push_back(toAdd);
             parent[toAdd] = curTile;
           }
         }
       }
     }
+    //find the path back
     for(Tile* tile = getTile(end.x, end.y); parent[tile] != NULL; tile = parent[tile])
     {
       toReturn.push_front(Point(tile->x(), tile->y()));
