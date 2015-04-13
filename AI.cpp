@@ -73,11 +73,11 @@ bool AI::run()
           //check if the tile is the right type (wall or empty)
           if(trapTypes[trapType].canPlaceOnWalls() && tile.type() == Tile::WALL)
           {
-            //me->placeTrap(tile.x(), tile.y(), trapType);
+            me->placeTrap(tile.x(), tile.y(), trapType);
           }
           else if(!trapTypes[trapType].canPlaceOnWalls() && tile.type() == Tile::EMPTY)
           {
-            //me->placeTrap(tile.x(), tile.y(), trapType);
+            me->placeTrap(tile.x(), tile.y(), trapType);
           }
         }
         else
