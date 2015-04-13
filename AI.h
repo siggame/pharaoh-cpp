@@ -16,176 +16,177 @@ struct Point
 ///The class implementing gameplay logic.
 class AI: public BaseAI
 {
-	//returns true if the position is on your side of the field
-	bool onMySide(int x)
-	{
-		if(playerID() == 0)
-		{
-			return (x < mapWidth()/2);
-		}
-		else
-		{
-			return (x >= mapWidth()/2);
-		}
-	}
+  //returns true if the position is on your side of the field
+  bool onMySide(int x)
+  {
+    if(playerID() == 0)
+    {
+      return (x < mapWidth()/2);
+    }
+    else
+    {
+      return (x >= mapWidth()/2);
+    }
+  }
 
-	//returns the first thief encountered on x, y or NULL if no thief
-	Thief* getThief(int x, int y)
-	{
-		if(x < 0 || x >= mapWidth() || y < 0 || y >= mapHeight())
-		{
-			return NULL;
-		}
-		for(int i = 0; i < thiefs.size(); ++i)
-		{
-			if(thiefs[i].x() == x && thiefs[i].y() == y)
-			{
-				return &thiefs[i];
-			}
-		}
-		return NULL;
-	}
+  //returns the first thief encountered on x, y or NULL if no thief
+  Thief* getThief(int x, int y)
+  {
+    if(x < 0 || x >= mapWidth() || y < 0 || y >= mapHeight())
+    {
+      return NULL;
+    }
+    for(int i = 0; i < thiefs.size(); ++i)
+    {
+      if(thiefs[i].x() == x && thiefs[i].y() == y)
+      {
+        return &thiefs[i];
+      }
+    }
+    return NULL;
+  }
 
-	//returns the tile at the given x,y position or NULL otherwise
-	Tile* getTile(int x, int y)
-	{
-		if(x < 0 || x >= mapWidth() || y < 0 || y >= mapHeight())
-		{
-			return NULL;
-		}
-		return &tiles[y + x * mapHeight()];
-	}
+  //returns the tile at the given x,y position or NULL otherwise
+  Tile* getTile(int x, int y)
+  {
+    if(x < 0 || x >= mapWidth() || y < 0 || y >= mapHeight())
+    {
+      return NULL;
+    }
+    return &tiles[y + x * mapHeight()];
+  }
 
-	//returns the trap at the given x,y position or NULL otherwise
-	Trap* getTrap(int x, int y)
-	{
-		if(x < 0 || x>= mapWidth() || y < 0 || y >= mapHeight())
-		{
-			return NULL;
-		}
-		for(int i = 0; i < traps.size(); ++i)
-		{
-			if(traps[i].x() == x && traps[i].y() == y)
-			{
-				return &traps[i];
-			}
-		}
-		return NULL;
-	}
+  //returns the trap at the given x,y position or NULL otherwise
+  Trap* getTrap(int x, int y)
+  {
+    if(x < 0 || x>= mapWidth() || y < 0 || y >= mapHeight())
+    {
+      return NULL;
+    }
+    for(int i = 0; i < traps.size(); ++i)
+    {
+      if(traps[i].x() == x && traps[i].y() == y)
+      {
+        return &traps[i];
+      }
+    }
+    return NULL;
+  }
 
-	//returns a vector of all of your traps
-	std::vector<Trap*> getMyTraps()
-	{
-		std::vector<Trap*> toReturn;
-		for(unsigned i = 0; i < traps.size(); ++i)
-		{
-			if(traps[i].owner() == playerID())
-			{
-				toReturn.push_back(&traps[i]);
-			}
-		}
-	}
+  //returns a vector of all of your traps
+  std::vector<Trap*> getMyTraps()
+  {
+    std::vector<Trap*> toReturn;
+    for(unsigned i = 0; i < traps.size(); ++i)
+    {
+      if(traps[i].owner() == playerID())
+      {
+        toReturn.push_back(&traps[i]);
+      }
+    }
+    return toReturn;
+  }
 
-	//returns a vector of all of your enemy's traps
-	std::vector<Trap*> getEnemyTraps()
-	{
-		std::vector<Trap*> toReturn;
-		for(unsigned i = 0; i < traps.size(); ++i)
-		{
-			if(traps[i].owner() != playerID())
-			{
-				toReturn.push_back(&traps[i]);
-			}
-		}
-	}
+  //returns a vector of all of your enemy's traps
+  std::vector<Trap*> getEnemyTraps()
+  {
+    std::vector<Trap*> toReturn;
+    for(unsigned i = 0; i < traps.size(); ++i)
+    {
+      if(traps[i].owner() != playerID())
+      {
+        toReturn.push_back(&traps[i]);
+      }
+    }
+  }
 
-	//returns a vector of all of your spawn tiles
-	std::vector<Tile*> getMySpawns()
-	{
-		std::vector<Tile*> toReturn;
-		for(unsigned i = 0; i < tiles.size(); ++i)
-		{
-			if(!onMySide(tiles[i].x()) && tiles[i].type() == Tile::SPAWN)
-			{
-				toReturn.push_back(&tiles[i]);
-			}
-		}
-		return toReturn;
-	}
+  //returns a vector of all of your spawn tiles
+  std::vector<Tile*> getMySpawns()
+  {
+    std::vector<Tile*> toReturn;
+    for(unsigned i = 0; i < tiles.size(); ++i)
+    {
+      if(!onMySide(tiles[i].x()) && tiles[i].type() == Tile::SPAWN)
+      {
+        toReturn.push_back(&tiles[i]);
+      }
+    }
+    return toReturn;
+  }
 
-	//return a vector of all of your theives
-	std::vector<Thief*> getMyThieves()
-	{
-		std::vector<Thief*> toReturn;
-		for(unsigned i = 0; i < thiefs.size(); ++i)
-		{
-			if(thiefs[i].owner() == playerID())
-			{
-				toReturn.push_back(&thiefs[i]);
-			}
-		}
-		return toReturn;
-	}
+  //return a vector of all of your theives
+  std::vector<Thief*> getMyThieves()
+  {
+    std::vector<Thief*> toReturn;
+    for(unsigned i = 0; i < thiefs.size(); ++i)
+    {
+      if(thiefs[i].owner() == playerID())
+      {
+        toReturn.push_back(&thiefs[i]);
+      }
+    }
+    return toReturn;
+  }
 
-	//return a vector of all of the enemy thieves
-	std::vector<Thief*> getEnemyThieves()
-	{
-		std::vector<Thief*> toReturn;
-		for(unsigned i = 0; i < thiefs.size(); ++i)
-		{
-			if(thiefs[i].owner() != playerID())
-			{
-				toReturn.push_back(&thiefs[i]);
-			}
-		}
-		return toReturn;
-	}
+  //return a vector of all of the enemy thieves
+  std::vector<Thief*> getEnemyThieves()
+  {
+    std::vector<Thief*> toReturn;
+    for(unsigned i = 0; i < thiefs.size(); ++i)
+    {
+      if(thiefs[i].owner() != playerID())
+      {
+        toReturn.push_back(&thiefs[i]);
+      }
+    }
+    return toReturn;
+  }
 
   //returns a path from start to end, or nothing if no path is found.
   std::deque<Point> findPath(Point start, Point end)
   {
-  	std::deque<Point> toReturn;
+    std::deque<Point> toReturn;
 
-	  std::deque<Tile*> theseTiles;
-	  //points back to parent tile
- 	  std::map<Tile*, Tile*> parent;
-	  theseTiles.push_back(getTile(start.x, start.y));
-	  parent[getTile(start.x, start.y)] = NULL;
-	  Tile* endTile = getTile(end.x, end.y);
-	  while(parent.count(endTile) == 0)
-	  {
-	  	if(theseTiles.empty())
-	  	{
-	  		return toReturn;
-	  	}
-	  	Tile* curTile = theseTiles.front();
-	  	theseTiles.pop_front();
-			const int xChange[]{ 0, 0, -1, 1};
-			const int yChange[]{-1, 1,  0, 0};
-			for(unsigned i = 0; i < 4; ++i)
-			{
-				Point loc(curTile->x() + xChange[i], curTile->y() + yChange[i]);
-				Tile* toAdd = getTile(loc.x, loc.y);
-				if(toAdd != NULL)
-				{
-					if(toAdd->type() == Tile::EMPTY && parent.count(toAdd) == 0)
-					{
-						theseTiles.push_back(toAdd);
-						parent[toAdd] = curTile;
-					}
-				}
-			}
-	  }
-	  for(Tile* tile = getTile(end.x, end.y); parent[tile] != NULL; tile = parent[tile])
-	  {
-	  	toReturn.push_front(Point(tile->x(), tile->y()));
-	  }
-	  return toReturn;
+    std::deque<Tile*> theseTiles;
+    //points back to parent tile
+    std::map<Tile*, Tile*> parent;
+    theseTiles.push_back(getTile(start.x, start.y));
+    parent[getTile(start.x, start.y)] = NULL;
+    Tile* endTile = getTile(end.x, end.y);
+    while(parent.count(endTile) == 0)
+    {
+      if(theseTiles.empty())
+      {
+        return toReturn;
+      }
+      Tile* curTile = theseTiles.front();
+      theseTiles.pop_front();
+      const int xChange[] = { 0, 0, -1, 1};
+      const int yChange[] = {-1, 1,  0, 0};
+      for(unsigned i = 0; i < 4; ++i)
+      {
+        Point loc(curTile->x() + xChange[i], curTile->y() + yChange[i]);
+        Tile* toAdd = getTile(loc.x, loc.y);
+        if(toAdd != NULL)
+        {
+          if(toAdd->type() == Tile::EMPTY && parent.count(toAdd) == 0)
+          {
+            theseTiles.push_back(toAdd);
+            parent[toAdd] = curTile;
+          }
+        }
+      }
+    }
+    for(Tile* tile = getTile(end.x, end.y); parent[tile] != NULL; tile = parent[tile])
+    {
+      toReturn.push_front(Point(tile->x(), tile->y()));
+    }
+    return toReturn;
   }
 
-	Player* me;
-	Trap* mySarcophagus;
-	Trap* enemySarcophagus;
+  Player* me;
+  Trap* mySarcophagus;
+  Trap* enemySarcophagus;
 
 public:
   AI(Connection* c);
