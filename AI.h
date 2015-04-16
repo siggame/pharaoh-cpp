@@ -197,8 +197,6 @@ class AI: public BaseAI
   }
 
   Player* me;
-  Trap* mySarcophagus;
-  Trap* enemySarcophagus;
 
 public:
   AI(Connection* c);
