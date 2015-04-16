@@ -254,11 +254,15 @@ bool AI::run()
           int checkX = trap->x() + xChange[dir];
           int checkY = trap->y() + yChange[dir];
           Tile* checkTile = getTile(checkX, checkY);
-          //if the tile is empty
-          if(checkTile != NULL && checkTile->type() == Tile::EMPTY)
+          Trap* checkTrap = getTrap(checkX, checkY);
+          //if the tile is empty, and there isn't a sarcophagus there
+          if(checkTrap == NULL || checkTrap->trapType() != TrapType::SARCOPHAGUS)
           {
-            //move on that tile
-            trap->act(checkX, checkY);
+            if(checkTile != NULL && checkTile->type() == Tile::EMPTY)
+            {
+              //move on that tile
+              trap->act(checkX, checkY);
+            }
           }
         }
       }
