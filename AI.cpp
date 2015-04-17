@@ -61,6 +61,8 @@ bool AI::run()
         }
       }
     }
+    //make sure there aren't too many traps spawned
+    std::vector<unsigned> trapCount(trapTypes.size());
     //continue spawning traps until there isn't enough money to spend
     for(unsigned i = 0; i < tiles.size(); ++i)
     {
@@ -75,6 +77,11 @@ bool AI::run()
         }
         //select a random trap type (make sure it isn't a sarcophagus)
         int trapType = (rand() % (trapTypes.size() - 1)) + 1;
+        //make sure another can be spawned
+        if(trapCount[trapType] < trapTypes[trapType].maxInstances())
+        {
+          continue;
+        }
         //if there are enough scarabs
         if(me->scarabs() >= trapTypes[trapType].cost())
         {
@@ -82,10 +89,12 @@ bool AI::run()
           if(trapTypes[trapType].canPlaceOnWalls() && tile.type() == Tile::WALL)
           {
             me->placeTrap(tile.x(), tile.y(), trapType);
+            ++trapCount[trapType];
           }
           else if(!trapTypes[trapType].canPlaceOnWalls() && tile.type() == Tile::EMPTY)
           {
             me->placeTrap(tile.x(), tile.y(), trapType);
+            ++trapCount[trapType];
           }
         }
         else
@@ -232,7 +241,7 @@ bool AI::run()
       const int yChange[] = { 0, 0, -1, 1};
       Trap* trap = myTraps[i];
       //make sure trap can be used
-      if(trap->turnsTillActive() == 0 && trap->activationsRemaining() > 0)
+      if(trap->active())
       {
         //if trap is a boulder
         if(trap->trapType() == TrapType::BOULDER)
@@ -245,6 +254,7 @@ bool AI::run()
             if(enemyThief != NULL)
             {
               trap->act(xChange[i], yChange[i]);
+              break;
             }
           }
         }
