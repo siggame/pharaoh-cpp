@@ -64,7 +64,7 @@ bool AI::run()
     //continue spawning traps until there isn't enough money to spend
     for(unsigned i = 0; i < tiles.size(); ++i)
     {
-      //if the tile is on my side and is empty
+      //if the tile is on my side
       Tile& tile = tiles[i];
       if(onMySide(tile.x()))
       {
@@ -95,14 +95,14 @@ bool AI::run()
       }
     }
   }
-  //otherwise it's time to move and purchase thiefs and activate traps
+  //otherwise it's time to move and purchase thieves and activate traps
   else
   {
     //find my sarcophagi and the enemy sarcophagi
     for(unsigned i = 0; i < traps.size(); ++i)
     {
       Trap& trap = traps[i];
-      if(trap.trapType() == 0)
+      if(trap.trapType() == TrapType::SARCOPHAGUS)
       {
         if(trap.owner() != playerID())
         {
@@ -118,6 +118,7 @@ bool AI::run()
     std::vector<Tile*> spawnTiles = getMySpawns();
     //select a random thief type
     int thiefNo = rand() % thiefTypes.size();
+    //if you can afford the thief
     if(me->scarabs() >= thiefTypes[thiefNo].cost())
     {
       //make sure another can be spawned
@@ -164,7 +165,7 @@ bool AI::run()
             //must be on the map, and not trying to dig to the other side
             if(wallTile != NULL && emptyTile != NULL && !onMySide(checkX + xChange[i]))
             {
-              //if the there is a wall with an empty tile on the other side
+              //if there is a wall with an empty tile on the other side
               if(wallTile->type() == Tile::WALL && emptyTile->type() == Tile::EMPTY)
               {
                 //dig through the wall
@@ -234,7 +235,7 @@ bool AI::run()
       if(trap->turnsTillActive() == 0 && trap->activationsRemaining() > 0)
       {
         //if trap is a boulder
-        if(trap->trapType() == TrapType::BOULDER && trap->turnsTillActive() == 0)
+        if(trap->trapType() == TrapType::BOULDER)
         {
           //if there is an enemy thief adjancent
           for(unsigned i = 0; i < 4; ++i)
@@ -247,7 +248,7 @@ bool AI::run()
             }
           }
         }
-        else if(trap->trapType() == TrapType::MUMMY && trap->turnsTillActive() == 0)
+        else if(trap->trapType() == TrapType::MUMMY)
         {
           //move around randomly if a mummy
           int dir = rand() % 4;

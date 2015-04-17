@@ -159,7 +159,7 @@ class AI: public BaseAI
     //as long as the end tile has no parent
     while(parent.count(endTile) == 0)
     {
-    	//if there are no tiles in the openSet the there is no path
+    	//if there are no tiles in the openSet then there is no path
       if(openSet.empty())
       {
         return toReturn;
@@ -178,7 +178,7 @@ class AI: public BaseAI
         //if a tile exists there
         if(toAdd != NULL)
         {
-        	//if it's an open file and it doesn't have a parent
+        	//if it's an open tile and it doesn't have a parent
           if(toAdd->type() == Tile::EMPTY && parent.count(toAdd) == 0)
           {
           	//add the tile to the open set; and mark its parent as the current tile
@@ -189,7 +189,7 @@ class AI: public BaseAI
       }
     }
     //find the path back
-    for(Tile* tile = getTile(end.x, end.y); parent[tile] != NULL; tile = parent[tile])
+    for(Tile* tile = endTile; parent[tile] != NULL; tile = parent[tile])
     {
       toReturn.push_front(Point(tile->x(), tile->y()));
     }
