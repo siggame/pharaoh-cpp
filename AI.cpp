@@ -74,50 +74,50 @@ bool AI::run()
 		//continue spawning traps until there isn't enough money to spend
 		for (unsigned i = 0; i < tiles.size(); ++i)
 		{
-			//if the tile is on my side
-			Tile& tile = tiles[i];
-			if (onMySide(tile.x()))
+		  //if the tile is on my side
+		  Tile& tile = tiles[i];
+		  if (onMySide(tile.x()))
+		  {
+			//make sure there isn't a trap on that tile
+			bool occupied = false;
+			for (int i = 0; i < newLocations.size(); i++)
 			{
-				//make sure there isn't a trap on that tile
-				bool occupied = false;
-				for (int i = 0; i < newLocations.size(); i++)
-				{
-					if (newLocations[i].x == tile.x() && newLocations[i].y == tile.y())
-						occupied = true;
-				}
-				if (!occupied)
-				{
-					//select a random trap type (make sure it isn't a sarcophagus)
-					int trapType = (rand() % (trapTypes.size() - 1)) + 1;
-					//make sure another can be spawned
-					if (trapCount[trapType] >= trapTypes[trapType].maxInstances())
-					{
-						continue;
-					}
-					//if there are enough scarabs
-					if (trapScarabs >= trapTypes[trapType].cost())
-					{
-						//check if the tile is the right type (wall or empty)
-						if (trapTypes[trapType].canPlaceOnWalls() && tile.type() == Tile::WALL)
-						{
-							me->placeTrap(tile.x(), tile.y(), trapType);
-							++trapCount[trapType];
-							trapScarabs -= trapTypes[trapType].cost();
-						}
-						else if (!trapTypes[trapType].canPlaceOnWalls() && tile.type() == Tile::EMPTY)
-						{
-							me->placeTrap(tile.x(), tile.y(), trapType);
-							++trapCount[trapType];
-							trapScarabs -= trapTypes[trapType].cost();
-						}
-					}
-					else
-					{
-						break;
-					}
-				}
+			  if (newLocations[i].x == tile.x() && newLocations[i].y == tile.y())
+				occupied = true;
 			}
+			if (!occupied)
+			{
+			  //select a random trap type (make sure it isn't a sarcophagus)
+			  int trapType = (rand() % (trapTypes.size() - 1)) + 1;
+			  //make sure another can be spawned
+			  if (trapCount[trapType] >= trapTypes[trapType].maxInstances())
+			  {
+				continue;
+			  }
+			  //if there are enough scarabs
+			  if (trapScarabs >= trapTypes[trapType].cost())
+			  {
+				//check if the tile is the right type (wall or empty)
+				if (trapTypes[trapType].canPlaceOnWalls() && tile.type() == Tile::WALL)
+				{
+					me->placeTrap(tile.x(), tile.y(), trapType);
+					++trapCount[trapType];
+					trapScarabs -= trapTypes[trapType].cost();
+				}
+				else if (!trapTypes[trapType].canPlaceOnWalls() && tile.type() == Tile::EMPTY)
+				{
+					me->placeTrap(tile.x(), tile.y(), trapType);
+					++trapCount[trapType];
+					trapScarabs -= trapTypes[trapType].cost();
+				}
+			  }
+			else
+			{
+			  break;
+			}
+		  }
 		}
+	  }
 	}
   //otherwise it's time to move and purchase thieves and activate traps
   else
