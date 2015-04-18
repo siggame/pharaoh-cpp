@@ -254,7 +254,7 @@ bool AI::run()
             //roll over the thief
             if(enemyThief != NULL)
             {
-              trap->act(xChange[i], yChange[i]);
+              trap->act(trap->x() + xChange[i], trap->y() + yChange[i]);
               break;
             }
           }
