@@ -6,6 +6,7 @@
 
 AI::AI(Connection* conn) : BaseAI(conn) {}
 
+/// Use this to give your AI a name
 const char* AI::username()
 {
   return "Shell AI";
@@ -16,7 +17,7 @@ const char* AI::password()
   return "password";
 }
 
-//This function is run once, before your first turn.
+///This function is run once, before your first turn.
 void AI::init()
 {
   //set up the random number generator
@@ -25,8 +26,8 @@ void AI::init()
   me = &players[playerID()];
 }
 
-//This function is called each time it is your turn.
-//Return true to end your turn, return false to ask the server for updated information.
+///This function is called each time it is your turn.
+///Return true to end your turn, return false to ask the server for updated information.
 bool AI::run()
 {
   //vectors for sarcophagi
@@ -282,5 +283,5 @@ bool AI::run()
   return true;
 }
 
-//This function is run once, after your last turn.
+///This function is run once, after your last turn.
 void AI::end(){}

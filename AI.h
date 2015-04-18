@@ -16,7 +16,7 @@ struct Point
 ///The class implementing gameplay logic.
 class AI: public BaseAI
 {
-  //returns true if the position is on your side of the field
+  ///returns true if the position is on your side of the field
   bool onMySide(int x)
   {
     if(playerID() == 0)
@@ -29,7 +29,7 @@ class AI: public BaseAI
     }
   }
 
-  //returns the first thief encountered on x, y or NULL if no thief
+  ///returns the first thief encountered on x, y or NULL if no thief
   Thief* getThief(int x, int y)
   {
     if(x < 0 || x >= mapWidth() || y < 0 || y >= mapHeight())
@@ -46,7 +46,7 @@ class AI: public BaseAI
     return NULL;
   }
 
-  //returns the tile at the given x,y position or NULL otherwise
+  ///returns the tile at the given x,y position or NULL otherwise
   Tile* getTile(int x, int y)
   {
     if(x < 0 || x >= mapWidth() || y < 0 || y >= mapHeight())
@@ -56,7 +56,7 @@ class AI: public BaseAI
     return &tiles[y + x * mapHeight()];
   }
 
-  //returns the trap at the given x,y position or NULL otherwise
+  ///returns the trap at the given x,y position or NULL otherwise
   Trap* getTrap(int x, int y)
   {
     if(x < 0 || x>= mapWidth() || y < 0 || y >= mapHeight())
@@ -73,7 +73,7 @@ class AI: public BaseAI
     return NULL;
   }
 
-  //returns a vector of all of your traps
+  ///returns a vector of all of your traps
   std::vector<Trap*> getMyTraps()
   {
     std::vector<Trap*> toReturn;
@@ -87,7 +87,7 @@ class AI: public BaseAI
     return toReturn;
   }
 
-  //returns a vector of all of your enemy's traps
+  ///returns a vector of all of your enemy's traps
   std::vector<Trap*> getEnemyTraps()
   {
     std::vector<Trap*> toReturn;
@@ -100,7 +100,7 @@ class AI: public BaseAI
     }
   }
 
-  //returns a vector of all of your spawn tiles
+  ///returns a vector of all of your spawn tiles
   std::vector<Tile*> getMySpawns()
   {
     std::vector<Tile*> toReturn;
@@ -114,7 +114,7 @@ class AI: public BaseAI
     return toReturn;
   }
 
-  //return a vector of all of your theives
+  ///return a vector of all of your thieves
   std::vector<Thief*> getMyThieves()
   {
     std::vector<Thief*> toReturn;
@@ -128,7 +128,7 @@ class AI: public BaseAI
     return toReturn;
   }
 
-  //return a vector of all of the enemy thieves
+  ///return a vector of all of the enemy thieves
   std::vector<Thief*> getEnemyThieves()
   {
     std::vector<Thief*> toReturn;
@@ -142,7 +142,7 @@ class AI: public BaseAI
     return toReturn;
   }
 
-  //returns a path from start to end, or nothing if no path is found.
+  ///returns a path from start to end, or nothing if no path is found.
   std::deque<Point> findPath(Point start, Point end)
   {
     std::deque<Point> toReturn;
