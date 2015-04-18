@@ -29,7 +29,7 @@ protected:
   std::vector<Mappable> mappables;
   std::vector<Tile> tiles;
   std::vector<Trap> traps;
-  std::vector<Thief> thiefs;
+  std::vector<Thief> thieves;
   std::vector<ThiefType> thiefTypes;
   std::vector<TrapType> trapTypes;
 public:

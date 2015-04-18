@@ -36,11 +36,11 @@ class AI: public BaseAI
     {
       return NULL;
     }
-    for(int i = 0; i < thiefs.size(); ++i)
+    for(int i = 0; i < thieves.size(); ++i)
     {
-      if(thiefs[i].x() == x && thiefs[i].y() == y)
+      if(thieves[i].x() == x && thieves[i].y() == y)
       {
-        return &thiefs[i];
+        return &thieves[i];
       }
     }
     return NULL;
@@ -118,11 +118,11 @@ class AI: public BaseAI
   std::vector<Thief*> getMyThieves()
   {
     std::vector<Thief*> toReturn;
-    for(unsigned i = 0; i < thiefs.size(); ++i)
+    for(unsigned i = 0; i < thieves.size(); ++i)
     {
-      if(thiefs[i].owner() == playerID())
+      if(thieves[i].owner() == playerID())
       {
-        toReturn.push_back(&thiefs[i]);
+        toReturn.push_back(&thieves[i]);
       }
     }
     return toReturn;
@@ -132,11 +132,11 @@ class AI: public BaseAI
   std::vector<Thief*> getEnemyThieves()
   {
     std::vector<Thief*> toReturn;
-    for(unsigned i = 0; i < thiefs.size(); ++i)
+    for(unsigned i = 0; i < thieves.size(); ++i)
     {
-      if(thiefs[i].owner() != playerID())
+      if(thieves[i].owner() != playerID())
       {
-        toReturn.push_back(&thiefs[i]);
+        toReturn.push_back(&thieves[i]);
       }
     }
     return toReturn;

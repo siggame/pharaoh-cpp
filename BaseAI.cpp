@@ -99,11 +99,11 @@ bool BaseAI::startTurn()
   }
 
   count = getThiefCount(c);
-  thiefs.clear();
-  thiefs.resize(count);
+  thieves.clear();
+  thieves.resize(count);
   for(int i = 0; i < count; i++)
   {
-    thiefs[i] = Thief(getThief(c, i));
+    thieves[i] = Thief(getThief(c, i));
   }
 
   count = getThiefTypeCount(c);
