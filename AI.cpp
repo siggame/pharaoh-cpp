@@ -78,7 +78,7 @@ bool AI::run()
         //select a random trap type (make sure it isn't a sarcophagus)
         int trapType = (rand() % (trapTypes.size() - 1)) + 1;
         //make sure another can be spawned
-        if(trapCount[trapType] < trapTypes[trapType].maxInstances())
+        if(trapCount[trapType] >= trapTypes[trapType].maxInstances())
         {
           continue;
         }
