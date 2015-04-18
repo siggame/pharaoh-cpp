@@ -229,7 +229,7 @@ bool AI::run()
           if(path.size() > 0)
           {
             thief->move(path[0].x, path[0].y);
-          }  
+          }
         }
       }
     }
