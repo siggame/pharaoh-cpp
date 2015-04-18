@@ -29,20 +29,23 @@ void AI::init()
 //Return true to end your turn, return false to ask the server for updated information.
 bool AI::run()
 {
+  //vectors for sarcophagi
+  std::vector<Trap*> mySarcophagi;
+  std::vector<Trap*> enemySarcophagi;
   //if it's time to place traps...
   if(roundTurnNumber() == 0 || roundTurnNumber() == 1)
   {
-    //find my sarcophagus
+    //find my sarcophagi
     for(unsigned i = 0; i < traps.size(); ++i)
     {
       Trap& trap = traps[i];
       if(trap.owner() == playerID() && trap.trapType() == TrapType::SARCOPHAGUS)
       {
-        mySarcophagus = &trap;
-        break;
+        mySarcophagi.push_back(&trap);
       }
     }
-    //find the first open tile
+    //find the first open tiles and place the sarcophagi there
+    unsigned sarcophagusCount = mySarcophagi.size();
     for(unsigned i = 0; i < tiles.size(); ++i)
     {
       //if the tile is on my side and is empty
@@ -51,12 +54,19 @@ bool AI::run()
       {
         //move my sarcophagus to that location
         me->placeTrap(tile.x(), tile.y(), TrapType::SARCOPHAGUS);
+        --sarcophagusCount;
+        if(sarcophagusCount == 0)
+        {
+          break;
+        }
       }
     }
+    //make sure there aren't too many traps spawned
+    std::vector<unsigned> trapCount(trapTypes.size());
     //continue spawning traps until there isn't enough money to spend
     for(unsigned i = 0; i < tiles.size(); ++i)
     {
-      //if the tile is on my side and is empty
+      //if the tile is on my side
       Tile& tile = tiles[i];
       if(onMySide(tile.x()))
       {
@@ -67,6 +77,11 @@ bool AI::run()
         }
         //select a random trap type (make sure it isn't a sarcophagus)
         int trapType = (rand() % (trapTypes.size() - 1)) + 1;
+        //make sure another can be spawned
+        if(trapCount[trapType] < trapTypes[trapType].maxInstances())
+        {
+          continue;
+        }
         //if there are enough scarabs
         if(me->scarabs() >= trapTypes[trapType].cost())
         {
@@ -74,10 +89,12 @@ bool AI::run()
           if(trapTypes[trapType].canPlaceOnWalls() && tile.type() == Tile::WALL)
           {
             me->placeTrap(tile.x(), tile.y(), trapType);
+            ++trapCount[trapType];
           }
           else if(!trapTypes[trapType].canPlaceOnWalls() && tile.type() == Tile::EMPTY)
           {
             me->placeTrap(tile.x(), tile.y(), trapType);
+            ++trapCount[trapType];
           }
         }
         else
@@ -87,22 +104,22 @@ bool AI::run()
       }
     }
   }
-  //otherwise it's time to move and purchase thiefs and activate traps
+  //otherwise it's time to move and purchase thieves and activate traps
   else
   {
-    //find my sarcophagus or the enemy sarcophagus
+    //find my sarcophagi and the enemy sarcophagi
     for(unsigned i = 0; i < traps.size(); ++i)
     {
       Trap& trap = traps[i];
-      if(trap.trapType() == 0)
+      if(trap.trapType() == TrapType::SARCOPHAGUS)
       {
         if(trap.owner() != playerID())
         {
-          enemySarcophagus = &trap;
+          enemySarcophagi.push_back(&trap);
         }
         else
         {
-          mySarcophagus = &trap;
+          mySarcophagi.push_back(&trap);
         }
       }
     }
@@ -110,6 +127,7 @@ bool AI::run()
     std::vector<Tile*> spawnTiles = getMySpawns();
     //select a random thief type
     int thiefNo = rand() % thiefTypes.size();
+    //if you can afford the thief
     if(me->scarabs() >= thiefTypes[thiefNo].cost())
     {
       //make sure another can be spawned
@@ -156,7 +174,7 @@ bool AI::run()
             //must be on the map, and not trying to dig to the other side
             if(wallTile != NULL && emptyTile != NULL && !onMySide(checkX + xChange[i]))
             {
-              //if the there is a wall with an empty tile on the other side
+              //if there is a wall with an empty tile on the other side
               if(wallTile->type() == Tile::WALL && emptyTile->type() == Tile::EMPTY)
               {
                 //dig through the wall
@@ -204,14 +222,14 @@ bool AI::run()
         {
           //find a path from the thief's location to the enemy sarcophagus
           std::deque<Point> path;
-          int endX = enemySarcophagus->x();
-          int endY = enemySarcophagus->y();
+          int endX = enemySarcophagi[0]->x();
+          int endY = enemySarcophagi[0]->y();
           path = findPath(Point(thief->x(), thief->y()), Point(endX, endY));
           //if a path exists then move forward on the path
           if(path.size() > 0)
           {
             thief->move(path[0].x, path[0].y);
-          }  
+          }
         }
       }
     }
@@ -222,32 +240,41 @@ bool AI::run()
       const int xChange[] = {-1, 1,  0, 0};
       const int yChange[] = { 0, 0, -1, 1};
       Trap* trap = myTraps[i];
-      //if trap is a boulder
-      if(trap->trapType() == TrapType::BOULDER)
+      //make sure trap can be used
+      if(trap->active())
       {
-        //if there is an enemy thief adjancent
-        for(unsigned i = 0; i < 4; ++i)
+        //if trap is a boulder
+        if(trap->trapType() == TrapType::BOULDER)
         {
-          Thief* enemyThief = getThief(trap->x() + xChange[i], trap->y() + yChange[i]);
-          //roll over the thief
-          if(enemyThief != NULL)
+          //if there is an enemy thief adjancent
+          for(unsigned i = 0; i < 4; ++i)
           {
-            trap->act(trap->x() + xChange[i], trap->y() + yChange[i]);
+            Thief* enemyThief = getThief(trap->x() + xChange[i], trap->y() + yChange[i]);
+            //roll over the thief
+            if(enemyThief != NULL)
+            {
+              trap->act(xChange[i], yChange[i]);
+              break;
+            }
           }
         }
-      }
-      else if(trap->trapType() == TrapType::MUMMY)
-      {
-        //move around randomly if a mummy
-        int dir = rand() % 4;
-        int checkX = trap->x() + xChange[dir];
-        int checkY = trap->y() + yChange[dir];
-        Tile* checkTile = getTile(checkX, checkY);
-        //if the tile is empty
-        if(checkTile != NULL && checkTile->type() == Tile::EMPTY)
+        else if(trap->trapType() == TrapType::MUMMY)
         {
-          //move on that tile
-          trap->act(checkX, checkY);
+          //move around randomly if a mummy
+          int dir = rand() % 4;
+          int checkX = trap->x() + xChange[dir];
+          int checkY = trap->y() + yChange[dir];
+          Tile* checkTile = getTile(checkX, checkY);
+          Trap* checkTrap = getTrap(checkX, checkY);
+          //if the tile is empty, and there isn't a sarcophagus there
+          if(checkTrap == NULL || checkTrap->trapType() != TrapType::SARCOPHAGUS)
+          {
+            if(checkTile != NULL && checkTile->type() == Tile::EMPTY)
+            {
+              //move on that tile
+              trap->act(checkX, checkY);
+            }
+          }
         }
       }
     }
