@@ -30,81 +30,95 @@ void AI::init()
 ///Return true to end your turn, return false to ask the server for updated information.
 bool AI::run()
 {
-  //vectors for sarcophagi
-  std::vector<Trap*> mySarcophagi;
-  std::vector<Trap*> enemySarcophagi;
-  //if it's time to place traps...
-  if(roundTurnNumber() == 0 || roundTurnNumber() == 1)
-  {
-    //find my sarcophagi
-    for(unsigned i = 0; i < traps.size(); ++i)
-    {
-      Trap& trap = traps[i];
-      if(trap.owner() == playerID() && trap.trapType() == TrapType::SARCOPHAGUS)
-      {
-        mySarcophagi.push_back(&trap);
-      }
-    }
-    //find the first open tiles and place the sarcophagi there
-    unsigned sarcophagusCount = mySarcophagi.size();
-    for(unsigned i = 0; i < tiles.size(); ++i)
-    {
-      //if the tile is on my side and is empty
-      Tile& tile = tiles[i];
-      if(onMySide(tile.x()) && tile.type() == Tile::EMPTY)
-      {
-        //move my sarcophagus to that location
-        me->placeTrap(tile.x(), tile.y(), TrapType::SARCOPHAGUS);
-        --sarcophagusCount;
-        if(sarcophagusCount == 0)
-        {
-          break;
-        }
-      }
-    }
-    //make sure there aren't too many traps spawned
-    std::vector<unsigned> trapCount(trapTypes.size());
-    //continue spawning traps until there isn't enough money to spend
-    for(unsigned i = 0; i < tiles.size(); ++i)
-    {
-      //if the tile is on my side
-      Tile& tile = tiles[i];
-      if(onMySide(tile.x()))
-      {
-        //make sure there isn't a trap on that tile
-        if(getTrap(tile.x(), tile.y()) != NULL)
-        {
-          continue;
-        }
-        //select a random trap type (make sure it isn't a sarcophagus)
-        int trapType = (rand() % (trapTypes.size() - 1)) + 1;
-        //make sure another can be spawned
-        if(trapCount[trapType] >= trapTypes[trapType].maxInstances())
-        {
-          continue;
-        }
-        //if there are enough scarabs
-        if(me->scarabs() >= trapTypes[trapType].cost())
-        {
-          //check if the tile is the right type (wall or empty)
-          if(trapTypes[trapType].canPlaceOnWalls() && tile.type() == Tile::WALL)
-          {
-            me->placeTrap(tile.x(), tile.y(), trapType);
-            ++trapCount[trapType];
-          }
-          else if(!trapTypes[trapType].canPlaceOnWalls() && tile.type() == Tile::EMPTY)
-          {
-            me->placeTrap(tile.x(), tile.y(), trapType);
-            ++trapCount[trapType];
-          }
-        }
-        else
-        {
-          break;
-        }
-      }
-    }
-  }
+	//vectors for sarcophagi
+	std::vector<Trap*> mySarcophagi;
+	std::vector<Trap*> enemySarcophagi;
+	std::vector<Point> newLocations;
+
+	//if it's time to place traps...
+	if (roundTurnNumber() == 0 || roundTurnNumber() == 1)
+	{
+		int trapScarabs = me->scarabs();
+
+		//find my sarcophagi
+		for (unsigned i = 0; i < traps.size(); ++i)
+		{
+			Trap& trap = traps[i];
+			if (trap.owner() == playerID() && trap.trapType() == TrapType::SARCOPHAGUS)
+			{
+				mySarcophagi.push_back(&trap);
+			}
+		}
+		//find the first open tiles and place the sarcophagi there
+		unsigned sarcophagusCount = mySarcophagi.size();
+		for (unsigned i = 0; i < tiles.size(); ++i)
+		{
+			//if the tile is on my side and is empty
+			Tile& tile = tiles[i];
+			if (onMySide(tile.x()) && tile.type() == Tile::EMPTY)
+			{
+				//move my sarcophagus to that location
+				me->placeTrap(tile.x(), tile.y(), TrapType::SARCOPHAGUS);
+				//store the new locations of my sarcophagi
+				newLocations.push_back(Point(tile.x(), tile.y()));
+				--sarcophagusCount;
+				if (sarcophagusCount == 0)
+				{
+					break;
+				}
+			}
+		}
+
+		//make sure there aren't too many traps spawned
+		std::vector<unsigned> trapCount(trapTypes.size());
+		//continue spawning traps until there isn't enough money to spend
+		for (unsigned i = 0; i < tiles.size(); ++i)
+		{
+			//if the tile is on my side
+			Tile& tile = tiles[i];
+			if (onMySide(tile.x()))
+			{
+				//make sure there isn't a trap on that tile
+				bool occupied = false;
+				for (int i = 0; i < newLocations.size(); i++)
+				{
+					if (newLocations[i].x == tile.x() && newLocations[i].y == tile.y())
+						occupied = true;
+				}
+				if (!occupied)
+				{
+					//select a random trap type (make sure it isn't a sarcophagus)
+					int trapType = (rand() % (trapTypes.size() - 1)) + 1;
+					//make sure another can be spawned
+					if (trapCount[trapType] >= trapTypes[trapType].maxInstances())
+					{
+						continue;
+					}
+					//if there are enough scarabs
+					if (trapScarabs >= trapTypes[trapType].cost())
+					{
+						//check if the tile is the right type (wall or empty)
+						if (trapTypes[trapType].canPlaceOnWalls() && tile.type() == Tile::WALL)
+						{
+							me->placeTrap(tile.x(), tile.y(), trapType);
+							++trapCount[trapType];
+							trapScarabs -= trapTypes[trapType].cost();
+						}
+						else if (!trapTypes[trapType].canPlaceOnWalls() && tile.type() == Tile::EMPTY)
+						{
+							me->placeTrap(tile.x(), tile.y(), trapType);
+							++trapCount[trapType];
+							trapScarabs -= trapTypes[trapType].cost();
+						}
+					}
+					else
+					{
+						break;
+					}
+				}
+			}
+		}
+	}
   //otherwise it's time to move and purchase thieves and activate traps
   else
   {
